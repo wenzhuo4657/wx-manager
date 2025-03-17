@@ -99,7 +99,7 @@ public class WeiXinValidateController {
         }
         out = outMessage.toXml();
 
-        logger.debug("\n组装回复信息：\n{}", out);
+        logger.info("\n组装回复信息：\n{}", out);
         return out;
     }
 
