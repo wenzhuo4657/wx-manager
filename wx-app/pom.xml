@@ -18,16 +18,84 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.wenzhuo4657.wx.api</groupId>
-            <artifactId>wx-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
+
         <dependency>
             <groupId>org.wenzhuo4657.wx.tigger</groupId>
             <artifactId>wx-tigger</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-    </dependencies>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>2.7.7</version>
+            <scope>test</scope>
+        </dependency>
 
+    </dependencies>
+    <build>
+        <finalName>wx-manager</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/**</include>
+                </includes>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/**</include>
+                </includes>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <!--            主要作用，会将该项目所依赖的jar一同打成jar包，maven packagez只会将本项目打成jar包-->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!--                    指定项目的启动类-->
+                    <mainClass>org.wenzhuo4657.wx.Application</mainClass>
+                    <!--                    打包方式-->
+                    <layout>JAR</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!--                            剔除其他依赖，保留最简单结构-->
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--            批量测试-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <!--                    跳过执行单元测试-->
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <!--            编译器的的设置，这里的编译指的是java ->>class  -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
 </project>

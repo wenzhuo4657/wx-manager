@@ -1,6 +1,10 @@
 package org.wenzhuo4657.wx.tigger.interfaces;
 
 
+import me.chanjar.weixin.mp.api.WxMpMessageRouter;
+import me.chanjar.weixin.mp.api.WxMpService;
+import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
+import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +20,7 @@ import javax.annotation.Resource;
  * @author: wenzhuo4657
  * @date: 2024/5/21 18:26
  * @Version: 1.0
- * @description: 微信公众号相关处理
+ * @description: 微信公众号验证
  */
 
 @RestController
@@ -25,11 +29,10 @@ public class WeiXinValidateController {
 
     private final Logger logger = LoggerFactory.getLogger(WeiXinValidateController.class);
 
-
-    @Value("${wx.config.originalid}")
-    private String originalId;
-
-
+    @Resource
+    private  WxMpService wxService;
+    @Resource
+    private WxMpMessageRouter wxMpMessageRouter;
     @Resource
     private IWeiXinValidateService weiXinValidateService;
 
@@ -72,6 +75,43 @@ public class WeiXinValidateController {
             return null;
         }
     }
+
+    @PostMapping(produces = "application/xml; charset=UTF-8")
+    public String post(@PathVariable String appid,
+                       @RequestBody String requestBody,
+                       @RequestParam("signature") String signature,
+                       @RequestParam("timestamp") String timestamp,
+                       @RequestParam("nonce") String nonce,
+                       @RequestParam("openid") String openid,
+                       @RequestParam(name = "encrypt_type", required = false) String encType,
+                       @RequestParam(name = "msg_signature", required = false) String msgSignature) {
+
+        this.wxService.switchoverTo(appid);//切换公众号
+        if (!wxService.checkSignature(timestamp, nonce, signature)) {
+            throw new IllegalArgumentException("非法请求，可能属于伪造的请求！");
+        }
+        String out = null;
+
+        WxMpXmlMessage inMessage = WxMpXmlMessage.fromXml(requestBody);
+        WxMpXmlOutMessage outMessage = this.route(appid,inMessage);
+        if (outMessage == null) {
+            return "";
+        }
+        out = outMessage.toXml();
+
+        logger.debug("\n组装回复信息：\n{}", out);
+        return out;
+    }
+
+    private WxMpXmlOutMessage route(String appid,WxMpXmlMessage  message){
+        try {
+            return this.wxMpMessageRouter.route(appid,message);
+        } catch (Exception e) {
+            logger.error("路由消息时出现异常！", e);
+        }
+        return null;
+    }
+
 
 
 
